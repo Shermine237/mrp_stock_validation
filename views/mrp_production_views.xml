@@ -102,10 +102,6 @@
                 <filter name="stock_unavailable" string="Stock Insuffisant" 
                         domain="[('stock_availability_status', '=', 'unavailable')]"/>
             </xpath>
-            <xpath expr="//group[@name='groupby']" position="inside">
-                <filter name="group_by_stock_status" string="Statut Stock" 
-                        context="{'group_by': 'stock_availability_status'}"/>
-            </xpath>
         </field>
     </record>
 </odoo>
