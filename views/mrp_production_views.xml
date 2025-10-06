@@ -87,33 +87,6 @@
         </field>
     </record>
 
-    <!-- Vue kanban étendue pour mrp.production -->
-    <record id="mrp_production_kanban_view_stock_validation" model="ir.ui.view">
-        <field name="name">mrp.production.kanban.stock.validation</field>
-        <field name="model">mrp.production</field>
-        <field name="inherit_id" ref="mrp.mrp_production_kanban_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('oe_kanban_bottom_right')]" position="inside">
-                <field name="stock_availability_status" invisible="1"/>
-                <span class="badge badge-pill badge-success" 
-                      t-if="record.stock_availability_status.raw_value == 'available'"
-                      title="Stock disponible">
-                    <i class="fa fa-check"/> Stock OK
-                </span>
-                <span class="badge badge-pill badge-warning" 
-                      t-if="record.stock_availability_status.raw_value == 'partial'"
-                      title="Stock partiel">
-                    <i class="fa fa-exclamation-triangle"/> Stock partiel
-                </span>
-                <span class="badge badge-pill badge-danger" 
-                      t-if="record.stock_availability_status.raw_value == 'unavailable'"
-                      title="Stock insuffisant">
-                    <i class="fa fa-times"/> Stock insuffisant
-                </span>
-            </xpath>
-        </field>
-    </record>
-
     <!-- Filtre de recherche pour les productions avec problèmes de stock -->
     <record id="mrp_production_search_view_stock_validation" model="ir.ui.view">
         <field name="name">mrp.production.search.stock.validation</field>
