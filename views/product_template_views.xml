@@ -11,7 +11,7 @@
                 <group string="Validation Stock MRP" name="mrp_stock_validation">
                     <field name="mrp_stock_validation_enabled"/>
                     <field name="mrp_stock_validation_mode" 
-                           attrs="{'invisible': [('mrp_stock_validation_enabled', '=', False)]}"/>
+                           invisible="not mrp_stock_validation_enabled"/>
                 </group>
             </xpath>
         </field>

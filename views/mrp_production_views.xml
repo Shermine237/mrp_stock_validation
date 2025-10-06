@@ -12,23 +12,15 @@
                         type="object" 
                         string="Vérifier Stock"
                         class="btn-secondary"
-                        attrs="{'invisible': [('state', 'not in', ['draft', 'confirmed'])]}"
+                        invisible="state not in ('draft', 'confirmed')"
                         help="Vérifier la disponibilité des matières premières"/>
-                <button name="action_force_confirm" 
-                        type="object" 
-                        string="Forcer Confirmation"
-                        class="btn-warning"
-                        attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('stock_availability_status', '=', 'available')]}"
-                        groups="mrp.group_mrp_manager"
-                        confirm="Êtes-vous sûr de vouloir confirmer cette production malgré le stock insuffisant ?"
-                        help="Forcer la confirmation malgré le stock insuffisant"/>
             </xpath>
 
             <!-- Ajouter les champs de validation de stock -->
             <xpath expr="//field[@name='product_qty']" position="after">
                 <field name="stock_validation_enabled" invisible="1"/>
                 <field name="stock_availability_status" 
-                       attrs="{'invisible': [('stock_validation_enabled', '=', False)]}"
+                       invisible="not stock_validation_enabled"
                        widget="badge"
                        decoration-success="stock_availability_status == 'available'"
                        decoration-warning="stock_availability_status == 'partial'"
@@ -39,7 +31,7 @@
             <!-- Ajouter les informations sur les composants manquants -->
             <xpath expr="//notebook" position="inside">
                 <page string="Validation Stock" 
-                      attrs="{'invisible': [('stock_validation_enabled', '=', False)]}">
+                      invisible="not stock_validation_enabled">
                     <group>
                         <group>
                             <field name="stock_availability_status" readonly="1"
@@ -51,24 +43,24 @@
                         </group>
                     </group>
                     <group string="Composants Manquants" 
-                           attrs="{'invisible': [('missing_components_info', '=', False)]}">
+                           invisible="not missing_components_info">
                         <field name="missing_components_info" 
                                widget="text" 
                                readonly="1"
                                nolabel="1"/>
                     </group>
                     <div class="alert alert-info" role="alert"
-                         attrs="{'invisible': [('stock_availability_status', '!=', 'available')]}">
+                         invisible="stock_availability_status != 'available'">
                         <strong>✓ Tous les composants sont disponibles</strong><br/>
                         Cette production peut être confirmée sans problème.
                     </div>
                     <div class="alert alert-warning" role="alert"
-                         attrs="{'invisible': [('stock_availability_status', '!=', 'partial')]}">
+                         invisible="stock_availability_status != 'partial'">
                         <strong>⚠ Stock partiel</strong><br/>
                         Certains composants ne sont pas disponibles en quantité suffisante.
                     </div>
                     <div class="alert alert-danger" role="alert"
-                         attrs="{'invisible': [('stock_availability_status', '!=', 'unavailable')]}">
+                         invisible="stock_availability_status != 'unavailable'">
                         <strong>✗ Stock insuffisant</strong><br/>
                         Les composants nécessaires ne sont pas disponibles en stock.
                     </div>

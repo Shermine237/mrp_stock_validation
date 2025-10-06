@@ -85,12 +85,6 @@ class MrpProduction(models.Model):
         ])
         return sum(quants.mapped('available_quantity'))
 
-    def action_confirm(self):
-        """Override de la confirmation pour valider le stock des matières premières"""
-        # Vérifier le stock avant confirmation
-        self._validate_raw_materials_stock()
-        return super().action_confirm()
-
     def _validate_raw_materials_stock(self):
         """Valide que toutes les matières premières sont disponibles en stock"""
         for production in self:
@@ -155,35 +149,18 @@ class MrpProduction(models.Model):
             }
         }
 
-    def action_force_confirm(self):
-        """Action pour forcer la confirmation malgré le stock insuffisant"""
-        # Désactiver temporairement la validation pour cette production
-        for production in self:
-            production.with_context(skip_stock_validation=True).action_confirm()
-        
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Production Forcée'),
-                'message': _('La production a été confirmée malgré le stock insuffisant.'),
-                'type': 'warning',
-                'sticky': False,
-            }
-        }
 
     def action_confirm(self):
-        """Override avec gestion du contexte de validation"""
-        if not self.env.context.get('skip_stock_validation'):
-            self._validate_raw_materials_stock()
+        """Override de la confirmation pour valider le stock des matières premières"""
+        self._validate_raw_materials_stock()
         return super().action_confirm()
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Override create pour calculer le statut initial"""
-        production = super().create(vals)
-        production._compute_stock_availability_status()
-        return production
+        productions = super().create(vals_list)
+        productions._compute_stock_availability_status()
+        return productions
 
     def write(self, vals):
         """Override write pour recalculer le statut si nécessaire"""

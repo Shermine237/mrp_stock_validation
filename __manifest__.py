@@ -5,18 +5,18 @@
     'category': 'Manufacturing',
     'summary': 'Bloquer la production des produits finis sans stock de matières premières',
     'description': """
-        Module de validation de stock pour la fabrication
-        ================================================
-        
-        Ce module ajoute une validation automatique du stock des matières premières
-        avant de permettre la confirmation d'un ordre de fabrication.
-        
-        Fonctionnalités:
-        - Vérification automatique du stock disponible pour chaque composant
-        - Blocage de la confirmation si stock insuffisant
-        - Messages d'erreur détaillés indiquant les composants manquants
-        - Configuration par produit pour activer/désactiver la validation
-        - Rapport de disponibilité des matières premières
+Module de validation de stock pour la fabrication
+=================================================
+
+Ce module ajoute une validation automatique du stock des matières premières
+avant de permettre la confirmation d'un ordre de fabrication.
+
+Fonctionnalités:
+- Vérification automatique du stock disponible pour chaque composant
+- Blocage de la confirmation si stock insuffisant
+- Messages d'erreur détaillés indiquant les composants manquants
+- Configuration par produit pour activer/désactiver la validation
+- Rapport de disponibilité des matières premières
     """,
     'author': 'Votre Société',
     'website': 'https://www.votresite.com',
