@@ -93,7 +93,7 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
         <field name="arch" type="xml">
-            <xpath expr="//filter[@name='draft']" position="after">
+            <xpath expr="//search" position="inside">
                 <separator/>
                 <filter name="stock_available" string="Stock Disponible" 
                         domain="[('stock_availability_status', '=', 'available')]"/>
