@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Configuration par défaut pour les produits existants -->
+        <record id="default_mrp_stock_validation_config" model="ir.config_parameter">
+            <field name="key">mrp_stock_validation.default_enabled</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="default_mrp_stock_validation_mode" model="ir.config_parameter">
+            <field name="key">mrp_stock_validation.default_mode</field>
+            <field name="value">strict</field>
+        </record>
+
+        <!-- Données de démonstration pour les modes de validation -->
+        <record id="mrp_validation_mode_strict" model="ir.model.data">
+            <field name="name">mrp_validation_mode_strict</field>
+            <field name="model">selection</field>
+            <field name="module">mrp_stock_validation</field>
+        </record>
+
+        <!-- Message d'aide pour la configuration -->
+        <record id="mrp_stock_validation_help_message" model="ir.config_parameter">
+            <field name="key">mrp_stock_validation.help_message</field>
+            <field name="value">La validation de stock MRP permet de s'assurer que tous les composants nécessaires sont disponibles avant de confirmer un ordre de fabrication. Configurez le mode de validation pour chaque produit selon vos besoins.</field>
+        </record>
+    </data>
+</odoo>

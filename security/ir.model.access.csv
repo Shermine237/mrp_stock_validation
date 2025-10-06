@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_production_user,mrp.production.user,mrp.model_mrp_production,mrp.group_mrp_user,1,1,1,0
+access_mrp_production_manager,mrp.production.manager,mrp.model_mrp_production,mrp.group_mrp_manager,1,1,1,1
+access_product_template_user,product.template.user,product.model_product_template,base.group_user,1,0,0,0
+access_product_template_mrp_user,product.template.mrp.user,product.model_product_template,mrp.group_mrp_user,1,1,0,0
+access_product_template_mrp_manager,product.template.mrp.manager,product.model_product_template,mrp.group_mrp_manager,1,1,1,0

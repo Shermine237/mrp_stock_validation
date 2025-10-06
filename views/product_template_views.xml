@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire étendue pour product.template -->
+    <record id="product_template_form_view_mrp_stock_validation" model="ir.ui.view">
+        <field name="name">product.template.form.mrp.stock.validation</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="mrp.product_template_form_view_bom_button"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les champs de validation MRP dans l'onglet Inventaire -->
+            <xpath expr="//page[@name='inventory']" position="inside">
+                <group string="Validation Stock MRP" name="mrp_stock_validation">
+                    <field name="mrp_stock_validation_enabled"/>
+                    <field name="mrp_stock_validation_mode" 
+                           attrs="{'invisible': [('mrp_stock_validation_enabled', '=', False)]}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste étendue pour product.template -->
+    <record id="product_template_tree_view_mrp_stock_validation" model="ir.ui.view">
+        <field name="name">product.template.tree.mrp.stock.validation</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='list_price']" position="after">
+                <field name="mrp_stock_validation_enabled" optional="hide"/>
+                <field name="mrp_stock_validation_mode" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire étendue pour mrp.production -->
+    <record id="mrp_production_form_view_stock_validation" model="ir.ui.view">
+        <field name="name">mrp.production.form.stock.validation</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les boutons dans le header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_check_stock_availability" 
+                        type="object" 
+                        string="Vérifier Stock"
+                        class="btn-secondary"
+                        attrs="{'invisible': [('state', 'not in', ['draft', 'confirmed'])]}"
+                        help="Vérifier la disponibilité des matières premières"/>
+                <button name="action_force_confirm" 
+                        type="object" 
+                        string="Forcer Confirmation"
+                        class="btn-warning"
+                        attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('stock_availability_status', '=', 'available')]}"
+                        groups="mrp.group_mrp_manager"
+                        confirm="Êtes-vous sûr de vouloir confirmer cette production malgré le stock insuffisant ?"
+                        help="Forcer la confirmation malgré le stock insuffisant"/>
+            </xpath>
+
+            <!-- Ajouter les champs de validation de stock -->
+            <xpath expr="//field[@name='product_qty']" position="after">
+                <field name="stock_validation_enabled" invisible="1"/>
+                <field name="stock_availability_status" 
+                       attrs="{'invisible': [('stock_validation_enabled', '=', False)]}"
+                       widget="badge"
+                       decoration-success="stock_availability_status == 'available'"
+                       decoration-warning="stock_availability_status == 'partial'"
+                       decoration-danger="stock_availability_status == 'unavailable'"
+                       decoration-muted="stock_availability_status == 'not_checked'"/>
+            </xpath>
+
+            <!-- Ajouter les informations sur les composants manquants -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Validation Stock" 
+                      attrs="{'invisible': [('stock_validation_enabled', '=', False)]}">
+                    <group>
+                        <group>
+                            <field name="stock_availability_status" readonly="1"
+                                   widget="badge"
+                                   decoration-success="stock_availability_status == 'available'"
+                                   decoration-warning="stock_availability_status == 'partial'"
+                                   decoration-danger="stock_availability_status == 'unavailable'"
+                                   decoration-muted="stock_availability_status == 'not_checked'"/>
+                        </group>
+                    </group>
+                    <group string="Composants Manquants" 
+                           attrs="{'invisible': [('missing_components_info', '=', False)]}">
+                        <field name="missing_components_info" 
+                               widget="text" 
+                               readonly="1"
+                               nolabel="1"/>
+                    </group>
+                    <div class="alert alert-info" role="alert"
+                         attrs="{'invisible': [('stock_availability_status', '!=', 'available')]}">
+                        <strong>✓ Tous les composants sont disponibles</strong><br/>
+                        Cette production peut être confirmée sans problème.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         attrs="{'invisible': [('stock_availability_status', '!=', 'partial')]}">
+                        <strong>⚠ Stock partiel</strong><br/>
+                        Certains composants ne sont pas disponibles en quantité suffisante.
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         attrs="{'invisible': [('stock_availability_status', '!=', 'unavailable')]}">
+                        <strong>✗ Stock insuffisant</strong><br/>
+                        Les composants nécessaires ne sont pas disponibles en stock.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste étendue pour mrp.production -->
+    <record id="mrp_production_tree_view_stock_validation" model="ir.ui.view">
+        <field name="name">mrp.production.tree.stock.validation</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="stock_availability_status" 
+                       widget="badge"
+                       decoration-success="stock_availability_status == 'available'"
+                       decoration-warning="stock_availability_status == 'partial'"
+                       decoration-danger="stock_availability_status == 'unavailable'"
+                       decoration-muted="stock_availability_status == 'not_checked'"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue kanban étendue pour mrp.production -->
+    <record id="mrp_production_kanban_view_stock_validation" model="ir.ui.view">
+        <field name="name">mrp.production.kanban.stock.validation</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_kanban_bottom_right')]" position="inside">
+                <field name="stock_availability_status" invisible="1"/>
+                <span class="badge badge-pill badge-success" 
+                      t-if="record.stock_availability_status.raw_value == 'available'"
+                      title="Stock disponible">
+                    <i class="fa fa-check"/> Stock OK
+                </span>
+                <span class="badge badge-pill badge-warning" 
+                      t-if="record.stock_availability_status.raw_value == 'partial'"
+                      title="Stock partiel">
+                    <i class="fa fa-exclamation-triangle"/> Stock partiel
+                </span>
+                <span class="badge badge-pill badge-danger" 
+                      t-if="record.stock_availability_status.raw_value == 'unavailable'"
+                      title="Stock insuffisant">
+                    <i class="fa fa-times"/> Stock insuffisant
+                </span>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filtre de recherche pour les productions avec problèmes de stock -->
+    <record id="mrp_production_search_view_stock_validation" model="ir.ui.view">
+        <field name="name">mrp.production.search.stock.validation</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='draft']" position="after">
+                <separator/>
+                <filter name="stock_available" string="Stock Disponible" 
+                        domain="[('stock_availability_status', '=', 'available')]"/>
+                <filter name="stock_partial" string="Stock Partiel" 
+                        domain="[('stock_availability_status', '=', 'partial')]"/>
+                <filter name="stock_unavailable" string="Stock Insuffisant" 
+                        domain="[('stock_availability_status', '=', 'unavailable')]"/>
+            </xpath>
+            <xpath expr="//group[@name='groupby']" position="inside">
+                <filter name="group_by_stock_status" string="Statut Stock" 
+                        context="{'group_by': 'stock_availability_status'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
