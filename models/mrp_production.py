@@ -27,7 +27,7 @@ class MrpProduction(models.Model):
         help="Détails des composants avec stock insuffisant"
     )
 
-    @api.depends('move_raw_ids', 'move_raw_ids.product_uom_qty', 'move_raw_ids.reserved_availability')
+    @api.depends('move_raw_ids', 'move_raw_ids.product_uom_qty', 'move_raw_ids.product_id')
     def _compute_stock_availability_status(self):
         """Calcule le statut de disponibilité du stock pour la production"""
         for production in self:
