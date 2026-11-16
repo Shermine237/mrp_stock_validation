@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    name: Tests unitaires
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lancer les tests sans serveur Odoo
+        run: python -m unittest tests.test_logic -v
+
+  odoo:
+    name: Tests Odoo 18
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U odoo -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer le module et lancer ses tests
+        run: |
+          docker run --rm --network host \
+            -v "${{ github.workspace }}:/mnt/extra-addons" \
+            -e HOST=127.0.0.1 \
+            -e PORT=5432 \
+            -e USER=odoo \
+            -e PASSWORD=odoo \
+            odoo:18.0 \
+            -d mrp_stock_validation \
+            -i mrp_stock_validation \
+            --test-enable \
+            --stop-after-init \
+            --without-demo=all \
+            --http-port=8079

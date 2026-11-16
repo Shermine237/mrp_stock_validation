@@ -27,7 +27,10 @@ class MrpProduction(models.Model):
         help="Détails des composants avec stock insuffisant"
     )
 
-    @api.depends('move_raw_ids', 'move_raw_ids.product_uom_qty', 'move_raw_ids.product_id')
+    @api.depends(
+        'move_raw_ids', 'move_raw_ids.product_uom_qty', 'move_raw_ids.product_id',
+        'location_src_id', 'stock_validation_enabled',
+    )
     def _compute_stock_availability_status(self):
         """Calcule le statut de disponibilité du stock pour la production"""
         for production in self:
@@ -43,8 +46,9 @@ class MrpProduction(models.Model):
             available_components = 0
             
             for move in production.move_raw_ids:
-                # Vérifier la disponibilité réelle du stock
-                available_qty = self._get_available_quantity(move.product_id, move.location_id)
+                available_qty = production._get_available_quantity(
+                    move.product_id, production.location_src_id,
+                )
                 if available_qty >= move.product_uom_qty:
                     available_components += 1
             
@@ -55,7 +59,10 @@ class MrpProduction(models.Model):
             else:
                 production.stock_availability_status = 'partial'
 
-    @api.depends('move_raw_ids', 'stock_availability_status')
+    @api.depends(
+        'move_raw_ids', 'move_raw_ids.product_uom_qty', 'move_raw_ids.product_id',
+        'location_src_id', 'stock_availability_status', 'stock_validation_enabled',
+    )
     def _compute_missing_components_info(self):
         """Calcule les informations sur les composants manquants"""
         for production in self:
@@ -65,7 +72,9 @@ class MrpProduction(models.Model):
             
             missing_info = []
             for move in production.move_raw_ids:
-                available_qty = self._get_available_quantity(move.product_id, move.location_id)
+                available_qty = production._get_available_quantity(
+                    move.product_id, production.location_src_id,
+                )
                 needed_qty = move.product_uom_qty
                 
                 if available_qty < needed_qty:
@@ -78,12 +87,17 @@ class MrpProduction(models.Model):
             production.missing_components_info = '\n'.join(missing_info) if missing_info else False
 
     def _get_available_quantity(self, product, location):
-        """Récupère la quantité disponible d'un produit dans un emplacement"""
-        quants = self.env['stock.quant'].search([
-            ('product_id', '=', product.id),
-            ('location_id', '=', location.id),
-        ])
-        return sum(quants.mapped('available_quantity'))
+        """Quantité disponible dans l'emplacement des composants et ses sous-emplacements.
+
+        ``location`` est ``location_src_id`` de l'ordre de fabrication
+        (onglet Divers, « Emplacement des composants »). ``strict=False``
+        reprend le calcul standard d'Odoo : l'emplacement et ses enfants.
+        """
+        if not product or not location:
+            return 0.0
+        return self.env['stock.quant']._get_available_quantity(
+            product, location, strict=False,
+        )
 
     def _validate_raw_materials_stock(self):
         """Valide que toutes les matières premières sont disponibles en stock"""
@@ -92,9 +106,10 @@ class MrpProduction(models.Model):
                 continue
                 
             missing_components = []
-            
+            location = production.location_src_id
+
             for move in production.move_raw_ids:
-                available_qty = self._get_available_quantity(move.product_id, move.location_id)
+                available_qty = production._get_available_quantity(move.product_id, location)
                 needed_qty = move.product_uom_qty
                 
                 if available_qty < needed_qty:
@@ -108,7 +123,11 @@ class MrpProduction(models.Model):
                     })
             
             if missing_components:
-                error_msg = _("Impossible de confirmer l'ordre de fabrication. Stock insuffisant pour les composants suivants:\n\n")
+                location_name = location.display_name if location else _("non défini")
+                error_msg = _(
+                    "Impossible de confirmer l'ordre de fabrication. "
+                    "Stock insuffisant dans l'emplacement « %(location)s » pour les composants suivants:\n\n"
+                ) % {'location': location_name}
                 
                 for comp in missing_components:
                     error_msg += _(
@@ -167,7 +186,7 @@ class MrpProduction(models.Model):
         result = super().write(vals)
         
         # Recalculer si les mouvements de matières premières ont changé
-        if any(field in vals for field in ['move_raw_ids', 'product_qty']):
+        if any(field in vals for field in ['move_raw_ids', 'product_qty', 'location_src_id']):
             self._compute_stock_availability_status()
             
         return result
